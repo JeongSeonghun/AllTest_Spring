@@ -3,6 +3,7 @@
 # docker build 시 docker buildx build --platform linux/arm/v7 -t [registry] --push .
 # docker local 에 표시 할 경우 --output type=docker 추가
 FROM adoptopenjdk/openjdk11:armv7l-debian-jdk-11.0.11_9
+# FROM adoptopenjdk/openjdk11:jdk-11.0.11_9-alpine
 
 ARG JAR=alltestspring-0.0.1-SNAPSHOT.jar
 ARG PORT=8080

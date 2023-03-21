@@ -1,20 +1,27 @@
 package com.jsh.alltest.alltestspring.base.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jsh.alltest.alltestspring.base.model.TestFile;
+import com.jsh.alltest.alltestspring.base.model.TestForm;
 import com.jsh.alltest.alltestspring.base.model.TestUser;
 import com.jsh.alltest.alltestspring.base.service.BaseRestService;
+import com.jsh.alltest.alltestspring.base.service.TestFileService;
 import com.jsh.alltest.alltestspring.conf.ErrorCode;
 import com.jsh.alltest.alltestspring.exception.CusException;
 
@@ -32,6 +39,9 @@ public class BaseRestController {
 
     @Autowired
     private BaseRestService service;
+
+    @Autowired
+	private TestFileService testFileService;
 
     /**
      * server 확인
@@ -120,5 +130,42 @@ public class BaseRestController {
 		log.info("check api exception : {}", remain);
 		return "check ex";
 	}
-   
+ 
+    /**
+     * mutipart test
+     * @param name
+     * @param file
+     * @return
+     */
+    @PostMapping("/testMultipart")
+	public String testMultipart(@RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
+		// multipart test
+		System.out.println("request multipart test name : " + name);
+		if (file != null && !file.isEmpty()) {
+			TestFile testFile = testFileService.addFile(file);
+			if (testFile != null) {
+				return "success";
+			}
+		}
+		return "fail";
+	}
+    /**
+     * mutipart test
+     * @param form
+     * @param errors
+     * @return
+     */
+	@PostMapping("/testMultipartForm")
+	public String testMultipartForm(TestForm form, BindingResult errors) {
+		// multipart binding test. multiple file
+		System.out.println("request multipart form test name : " + form.getName());
+		if (form.getFiles() != null && form.getFiles().length > 0) {
+			List<TestFile> files = testFileService.addFile(form.getFiles());
+			if (!files.isEmpty()) {
+				return "success";
+			}
+		}
+		
+		return "fail";
+	}
 }
