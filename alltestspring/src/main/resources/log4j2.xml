@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 
+    Configuration : 로그설정 최상위 노드
+    status 속성: Log4j2 내부의 동작에 대한 로깅 레벨을 설정
+    monitorInterval : 파일 변경 여부 확인 주기. 30 -> 30분 주기
+-->
+<!-- <Configuration status="debug" name="AllTest" monitorInterval="30"> -->
+<Configuration status="INFO">
+    <!-- Properties: 하단 설정에 사용할 변수 정의 -->
+    <Properties>
+        <!-- LOG_PATTERN이라는 변수 정의 -->
+        <Property name="LOG_PATTERN">%d{HH:mm:ss.SSSZ} [%t] %-5level %logger{36} - %msg%n</Property>
+        <Property name="LOG_ERR_PATTERN">%d{yyyy-MM-dd HH:mm:ss} %5p [%c] %m%n</Property>
+    </Properties>
+    <!-- Appenders: 로그가 출력되는 위치 -->
+    <Appenders>
+        <!-- 
+            Console: 콘솔에 출력될 로그 설정
+            target: 로그 타겟 (default: SYSTEM_OUT)
+         -->
+        <Console name="ConsoleLog" target="SYSTEM_OUT">
+            <!-- PatternLayout: 로그의 패턴을 설정
+            https://logging.apache.org/log4j/2.x/manual/layouts.html
+            -->
+            <PatternLayout pattern="${LOG_PATTERN}" charset="UTF-8"/>
+        </Console>
+        <!-- RollingFile: 조건에 따라 파일에 로그를 출력하도록 설정
+            name: 어펜더의 이름
+            fileName: 경로를 포함한 파일 이름
+            filePattern: 롤링 조건에 따른 경로를 포함한 파일 이름 패턴
+            Policies: 파일 롤링 정책 
+            fileName을 ./logs/spring.log 로 사용 시 war 외부 톰캣 사용 시 톰캣 경로 bin에 있을 수 있음. 상용배포 시 절대경로로 지정해서 원하는 위치에 저장
+        -->
+        <!-- <RollingFile name="FileLog"
+                    fileName="./logs/spring.log"
+                    filePattern="./logs/spring-%d{yyyy-MM-dd}-%i.log"> -->
+        <RollingFile name="FileLog"
+                    fileName="/Users/seonghunjeong/emgram/etc/temp/logs/spring.log"
+                    filePattern="/Users/seonghunjeong/emgram/etc/temp/logs/spring-%d{yyyy-MM-dd}-%i.log">
+           <PatternLayout pattern="${LOG_PATTERN}" charset="UTF-8" />
+           <!-- 
+                TimeBasedTriggeringPolicy: 1일 단위(interval=1)로 새로운 파일에 로그를 기록
+                SizeBasedTriggeringPolicy: 파일 사이즈를 기준으로 용량이 넘칠 경우 다음 파일을 생성하여 기록
+                DefaultRolloverStrategy: 파일 용량 초과 시 생성될 수 있는 파일의 최대 개수 설정
+            -->
+           <Policies>
+               <TimeBasedTriggeringPolicy interval="1" />
+               <SizeBasedTriggeringPolicy size="10000KB" />
+           </Policies>
+           <!-- 
+                fileIndex : max는 인덱스가 큰 파일이 최신. min은 인덱스가 작은 파일이 최신
+                max : 최대 값. 넘어갈 경우 오래된 파일 삭제
+            -->
+           <DefaultRolloverStrategy max="20" fileIndex="min" />
+       </RollingFile>
+
+        <RollingFile name ="RollingFileError">
+            <FileName>/Users/seonghunjeong/emgram/etc/temp/logs/spring_error.log</FileName>
+            <Filters>
+                <!-- <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY" /> -->
+                <ThresholdFilter level="ERROR"/>
+            </Filters>
+            <!--
+                %d{yyyy-MM-dd-hh-mm}.log.zip	interval = 1	 1분마다 롤링
+                %d{yyyy-MM-dd-hh}.log.zip	interval = 1	 1시간마다 롤링
+                %d{yyyy-MM-dd}.log.zip	interval = 1	 1일마다 롤링
+            -->
+            <!-- <FilePattern>/Users/seonghunjeong/emgram/etc/temp/logs/spring_error-%d{yyyy-MM-dd}.log.zip</FilePattern> -->
+            <FilePattern>/Users/seonghunjeong/emgram/etc/temp/logs/spring_error-%d{yyyy-MM-dd-hh-mm}.log.zip</FilePattern>
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <!-- <PatternLayout pattern="${LOG_ERR_PATTERN}" charset="UTF-8" /> -->
+            <Policies>
+                <!-- <TimeBasedTriggeringPolicy interval = "1" modulate = "true"/> -->
+                <TimeBasedTriggeringPolicy interval = "5" modulate = "true"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <!-- Loggers: 로깅 작업의 주체로 각 패키지 별로 다양한 설정 가능 -->
+    <Loggers>
+        <!-- Root: 모든 패키지에 대한 로깅을 하기 위한 일반적인 로그 정책 설정 (한 개만 설정할 수 있음) -->
+        <!-- 
+            level: TRACE > DEBUG > INFO > WARN > ERROR
+            Additivity: 중복된 로그를 남길 지에 대한 속성
+         -->
+        <Root level="info">
+        <!-- <Root level="debug"> -->
+            <!-- AppenderRef: 상단에 설정한 Appender를 참조 -->
+            <AppenderRef ref="ConsoleLog" />
+            <AppenderRef ref="FileLog" />
+        </Root>
+
+        <!-- <Logger name="com.jsh.alltest" level="INFO" additivity="false"> -->
+        <Logger name="com.jsh.alltest" additivity="false">
+            <AppenderRef ref="ConsoleLog"/>
+            <AppenderRef ref="FileLog" />
+            <AppenderRef ref="RollingFileError"/>
+        </Logger>
+    </Loggers>
+</Configuration>
